@@ -1,0 +1,1337 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>
+    	Snake
+    </title>
+    <style>
+        body {
+            background: black;
+        }
+        
+        #controls {
+            background: transparent;
+            color: white;
+            font-family: "Comic Sans MS", sans-serif;
+            font-size: 100%;
+            float: left;
+        }
+        
+        #keyBoardChange {
+            background: transparent;
+            color: white;
+            font-family: "Comic Sans MS", sans-serif;
+            font-size: 100%;
+            float: left;
+            margin-left: 10%;
+            display: none;
+        }
+        
+        #score-box {
+            background: transparent;
+            color: white;
+            font-family: "Comic Sans MS", sans-serif;
+            font-size: 100%;
+            float: right;
+            margin-right: 15px;
+        }
+        
+        #high-score-box {
+            background: transparent;
+            color: gold;
+            font-family: "Comic Sans MS", sans-serif;
+            font-size: 100%;
+            float: right;
+            margin-right: 15px;
+        }
+        
+        #game-field {
+            position: relative;
+            width: 1200px;
+            height: 600px;
+            border: 20px solid blue;
+        }
+        
+        .popup {
+            display: block;
+            position: relative;
+            top: 50%;
+            transform: translateY(-50%);
+            left: 25%;
+            max-width: 50%;
+            background: radial-gradient(rgba(108, 0, 228, 0.8), rgba(176, 60, 249, 0.8), rgba(208, 90, 255, 0.8));
+            color: white;
+            clear: both;
+            font-family: "Comic Sans MS", sans-serif;
+            font-size: 150%;
+            text-align: center;
+            z-index: 1;
+        }
+        
+        .snake-bodypart {
+            background: rgb(0, 255, 0);
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border: 1px solid rgb(0, 200, 0);
+            visibility: hidden;
+            z-index: -2;
+        }
+        
+        #snake-head {
+            border: 1px solid rgb(0, 200, 0);
+            border-top: 1px solid red;
+            width: 18px;
+            height: 18px;
+            top: 20px;
+            left: 20px;
+            position: absolute;
+            border-bottom: 1px solid cyan;
+            background: rgb(0, 255, 0);
+        }
+        
+        #snake-tail {
+            border: 1px solid rgb(0, 200, 0);
+            border-bottom: 1px solid cyan;
+            width: 18px;
+            height: 18px;
+            background: rgb(0, 255, 0);
+            position: absolute;
+            display: none;
+            z-index: -1;
+        }
+        
+        #apple {
+            position: relative;
+            background: red;
+            width: 20px;
+            height: 20px;
+            z-index: -3;
+        }
+        
+        button,
+        input[type="submit"] {
+            border: 3px solid white;
+            border-radius: 2px;
+            font-family: "Comic Sans MS", sans-serif;
+            font-size: 50%;
+            cursor: pointer;
+            appearance: none;
+        }
+        
+        button:hover,
+        input[type="submit"]:hover {
+            background: orange;
+        }
+        
+        button:focus,
+        input[type="submit"]:focus {
+            background: red;
+            outline: none;
+        }
+        
+        #leftButton {
+            position: absolute;
+            width: 20%;
+            height: 100%;
+            left: 0;
+            top: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.2);
+            display: none;
+            font-size: 100%;
+        }
+        
+        #upButton {
+            position: absolute;
+            width: 60%;
+            height: 50%;
+            left: 20%;
+            top: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.2);
+            display: none;
+            font-size: 100%;
+        }
+        
+        #downButton {
+            position: absolute;
+            width: 60%;
+            height: 50%;
+            left: 20%;
+            bottom: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.2);
+            display: none;
+            font-size: 100%;
+        }
+        
+        #rightButton {
+            position: absolute;
+            width: 20%;
+            height: 100%;
+            right: 0;
+            top: 0;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: transparent;
+            color: rgba(255, 255, 255, 0.2);
+            display: none;
+            font-size: 100%;
+        }
+        
+        #leftButton:focus {
+            outline: none;
+        }
+        
+        #upButton:focus {
+            outline: none;
+        }
+        
+        #downButton:focus {
+            outline: none;
+        }
+        
+        #rightButton:focus {
+            outline: none;
+        }
+    </style>
+</head>
+
+<body tabindex="1" onkeydown="keyDownFunction(event)">
+    <div id="game-field">
+        <div id="apple">
+        </div>
+        <div id="snake-head">
+        </div>
+        <div id="snake-tail">
+        </div>
+        <div id="keyboardCheck" class="popup">Do you have a Keyboard?
+            <br>
+            <form>
+                <input type="radio" id="yes" name="haskeyboard" value="yes" required>
+                <label for="yes">Yes</label>
+                <br>
+                <input type="radio" id="no" name="haskeyboard" value="no" required>
+                <label for="no">No</label>
+                <br>
+                <input type="checkbox" id="remember">
+                <label for="remember">Remember this!</label>
+                <br>
+            </form>
+            <input type="submit" value="Let's Go!" onclick="letsGo()">
+        </div>
+        <div id="intro" class="popup" style="display:none;">
+            Welcome to Snake!
+            <br>
+            <span style="font-size:15px;">Use the arrow buttons or WASD to move the snake. Don't touch the blue or the snake's body. Eat the apples and get as long as possible.<br>Note: This will not be fun on Microsoft Edge.</span>
+            <br>
+            <button onclick="start()">Start Game!</button>
+        </div>
+        <div id="pauseScreen" class="popup" style="display:none;">
+            Paused
+            <br>
+            <span style="font-size:15px;">Press the Spacebar to unpause</span>
+        </div>
+        <div id="gameOver" class="popup" style="display:none;">
+            You died!
+            <br> Score: <span id="finalScore"></span>
+            <br>
+            <button onclick="restart()">Play Again!</button>
+        </div>
+        <div id="beat-high-score" class="popup" style="display:none;">
+            <span style="color:gold;">Congratulations! You set a new High Score!</span>
+            <br> Score: <span id="final-high-score"></span>
+            <br>
+            <button onclick="restart()">Play Again!</button>
+        </div>
+        <button onmousedown="goLeft()" id="leftButton"><span style="margin:auto;padding:0;font-size:300%">&lt;</span></button>
+        <button onmousedown="goUp()" id="upButton"><span style="margin:auto;padding:0;font-size:300%;display:block;">^</span></button>
+        <button onmousedown="goDown()" id="downButton"><span style="margin:auto;padding:0;font-size:300%;display:block;transform:rotate(180deg);">^</span></button>
+        <button onmousedown="goRight()" id="rightButton"><span style="margin:auto;padding:0;font-size:300%">&gt;</span></button>
+    </div>
+    <div id="controls">Spacebar =
+        <button onclick="pause()" style="color:purple;">pause/unpause</button>
+    </div>
+    <div id="keyBoardChange" onclick="keyBoardChange()">
+        <div id="lostKeyboard">I lost my keyboard!</div>
+        <div id="gotKeyboard">I got a keyboard!</div>
+    </div>
+    <div id="high-score-box">High Score: <span id="high-score"></span></div>
+    <div id="score-box">Score: <span id="score"></span></div>
+    <script>
+        var dead = false;
+        var maintainSize = setInterval(screenSize, 20);
+        var gameField = document.getElementById("game-field");
+        var snake = document.getElementById("snake-head");
+        var goingUp = false;
+        var goingRight = false;
+        var goingLeft = false;
+        var goingDown = false;
+        var justWentUp = false;
+        var justWentRight = false;
+        var justWentDown = false;
+        var justWentLeft = false;
+        var topPosition = 1;
+        var leftPosition = 1;
+        var tailTopPosition;
+        var tailLeftPosition;
+        var appleTopPosition;
+        var appleLeftPosition;
+        var paused = false;
+        var playing = false;
+        var score = 1;
+        var oldHighScore;
+        var yum = 0;
+        var m = 0;
+        var bodyPiece;
+        var tail = document.getElementById("snake-tail");
+        var apple = document.getElementById("apple");
+        var justAteApple = false;
+        var hasEatenApple = false;
+        var justMovedTail = false;
+        var debugSnakeBodyPartGlitch = false;
+        snake.style.top = (topPosition * sizeFactor) + "px";
+        snake.style.left = (leftPosition * sizeFactor) + "px";
+        var sizeFactor;
+        try {
+            var keyBoardMemory = localStorage.getItem("keyBoard");
+        } catch (error) {
+            console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+        }
+
+        function checkKeyBoard() {
+            try {
+                if (typeof(Storage) !== undefined) {
+                    if (keyBoardMemory == null) {
+                        document.getElementById("intro").style.display = "none";
+                    } else {
+                        document.getElementById("keyboardCheck").style.display = "none";
+                        document.getElementById("keyBoardChange").style.display = "block";
+                        document.getElementById("intro").style.display = "block";
+                    }
+                    if (keyBoardMemory == "true") {
+                        document.getElementById("lostKeyboard").style.display = "block";
+                        document.getElementById("gotKeyboard").style.display = "none";
+                    } else if (keyBoardMemory == "false") {
+                        document.getElementById("gotKeyboard").style.display = "block";
+                        document.getElementById("lostKeyboard").style.display = "none";
+                        document.getElementById("leftButton").style.display = "block";
+                        document.getElementById("upButton").style.display = "block";
+                        document.getElementById("downButton").style.display = "block";
+                        document.getElementById("rightButton").style.display = "block";
+                    } else {
+                        document.getElementById("intro").style.display = "none";
+                        document.getElementById("keyboardCheck").style.display = "block";
+                    }
+                }
+            } catch (error) {
+                console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+            }
+        }
+        try {
+            checkKeyBoard();
+        } catch (error) {
+            console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+        }
+
+        function letsGo() {
+            if (document.getElementById("no").checked) {
+                document.getElementById("leftButton").style.display = "block";
+                document.getElementById("upButton").style.display = "block";
+                document.getElementById("downButton").style.display = "block";
+                document.getElementById("rightButton").style.display = "block";
+                document.getElementById("gotKeyboard").style.display = "block";
+                document.getElementById("lostKeyboard").style.display = "none";
+                document.getElementById("keyBoardChange").style.display = "block";
+                document.getElementById("keyboardCheck").style.display = "none";
+                if (document.getElementById("remember").checked) {
+                    try {
+                        localStorage.setItem("keyBoard", "false");
+                    } catch (error) {
+                        console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+                    }
+                }
+            } else if (document.getElementById("yes").checked) {
+                document.getElementById("gotKeyboard").style.display = "none";
+                document.getElementById("lostKeyboard").style.display = "block";
+                document.getElementById("keyBoardChange").style.display = "block";
+                document.getElementById("keyboardCheck").style.display = "none";
+                if (document.getElementById("remember").checked) {
+                    try {
+                        localStorage.setItem("keyBoard", "true");
+                    } catch (error) {
+                        console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+                    }
+                }
+            }
+            if (document.getElementById("yes").checked || document.getElementById("no").checked)
+                document.getElementById("intro").style.display = "block";
+        }
+
+        function keyBoardChange() {
+            if (document.getElementById("gotKeyboard").style.display == "block") {
+                document.getElementById("gotKeyboard").style.display = "none";
+                document.getElementById("lostKeyboard").style.display = "block";
+                document.getElementById("leftButton").style.display = "none";
+                document.getElementById("upButton").style.display = "none";
+                document.getElementById("downButton").style.display = "none";
+                document.getElementById("rightButton").style.display = "none";
+                try {
+                    localStorage.setItem("keyBoard", "true");
+                } catch (error) {
+                    console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+                }
+            } else if (document.getElementById("lostKeyboard").style.display == "block") {
+                document.getElementById("lostKeyboard").style.display = "none";
+                document.getElementById("gotKeyboard").style.display = "block";
+                document.getElementById("leftButton").style.display = "block";
+                document.getElementById("upButton").style.display = "block";
+                document.getElementById("downButton").style.display = "block";
+                document.getElementById("rightButton").style.display = "block";
+                try {
+                    localStorage.setItem("keyBoard", "false");
+                } catch (error) {
+                    console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+                }
+            }
+        }
+
+        function screenSize() {
+            if (window.innerWidth >= 1250 && window.innerHeight >= 670) {
+                sizeFactor = 20;
+            } else {
+                if (window.innerWidth >= 1200 && window.innerHeight >= 640) {
+                    sizeFactor = 19;
+                } else {
+                    if (window.innerWidth >= 1120 && window.innerHeight >= 600) {
+                        sizeFactor = 18;
+                    } else {
+                        if (window.innerWidth >= 1070 && window.innerHeight >= 570) {
+                            sizeFactor = 17;
+                        } else {
+                            if (window.innerWidth >= 1020 && window.innerHeight >= 540) {
+                                sizeFactor = 16;
+                            } else {
+                                if (window.innerWidth >= 960 && window.innerHeight >= 510) {
+                                    sizeFactor = 15;
+                                } else {
+                                    if (window.innerWidth >= 900 && window.innerHeight >= 470) {
+                                        sizeFactor = 14;
+                                    } else {
+                                        if (window.innerWidth >= 850 && window.innerHeight >= 440) {
+                                            sizeFactor = 13;
+                                        } else {
+                                            if (window.innerWidth >= 790 && window.innerHeight >= 410) {
+                                                sizeFactor = 12;
+                                            } else {
+                                                if (window.innerWidth >= 730 && window.innerHeight >= 370) {
+                                                    sizeFactor = 11;
+                                                } else {
+                                                    sizeFactor = 10;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            document.getElementById("game-field").style.width = (sizeFactor * 60) + "px";
+            document.getElementById("game-field").style.height = (sizeFactor * 30) + "px";
+            document.getElementById("game-field").style.border = (sizeFactor) + "px solid blue";
+            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.width = (sizeFactor - 2) + "px";
+                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.height = (sizeFactor - 2) + "px";
+                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top = (sizeFactor * document.getElementsByClassName("snake-bodypart")[bodyPiece].getAttributeNode("data-position-y").value) + "px";
+                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left = (sizeFactor * document.getElementsByClassName("snake-bodypart")[bodyPiece].getAttributeNode("data-position-x").value) + "px";
+            }
+            snake.style.width = (sizeFactor - 2) + "px";
+            snake.style.height = (sizeFactor - 2) + "px";
+
+            tail.style.width = (sizeFactor - 2) + "px";
+            tail.style.height = (sizeFactor - 2) + "px";
+            apple.style.width = (sizeFactor) + "px";
+            apple.style.height = (sizeFactor) + "px";
+            snake.style.top = (topPosition * sizeFactor) + "px";
+            snake.style.left = (leftPosition * sizeFactor) + "px";
+            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+            apple.style.top = (appleTopPosition * sizeFactor) + "px";
+            apple.style.left = (appleLeftPosition * sizeFactor) + "px";
+        }
+        screenSize();
+
+        function moveFunction() {
+            if (goingUp) {
+                if (justWentUp) {
+                    justWentUp = false;
+                } else {
+                    topPosition -= 1;
+                    snake.style.top = (topPosition * sizeFactor) + "px";
+                    for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                        if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == snake.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == ((topPosition * sizeFactor) + sizeFactor) + "px")) {
+                            if (hasEatenApple) {
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                            }
+                        }
+                    }
+                    if (yum == 1) {
+                        yum++;
+                        snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                        tail.style.display = "block";
+                        tailTopPosition = topPosition + 1;
+                        tailLeftPosition = leftPosition;
+                        tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                        tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                    } else if (yum == 2) {
+                        yum++;
+                    } else if (yum == 3) {
+                        yum++;
+                    } else if (yum == 4) {
+                        justAteApple = false;
+                        yum++;
+                    }
+                    if (m == 1) {
+                        m++;
+                    } else if (m == 2) {
+                        m++;
+                    } else if (m == 3) {
+                        m++;
+                        if (!debugSnakeBodyPartGlitch) {
+                            justAteApple = false;
+                        }
+                    } else if (m == 4) {
+                        m++;
+                        if (debugSnakeBodyPartGlitch) {
+                            debugSnakeBodyPartGlitch = false;
+                            justAteApple = false;
+                        }
+                    }
+                }
+            }
+            if (goingRight) {
+                if (justWentRight) {
+                    justWentRight = false;
+                } else {
+                    leftPosition += 1;
+                    snake.style.left = (leftPosition * sizeFactor) + "px";
+                    for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                        if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == ((leftPosition * sizeFactor) - sizeFactor) + "px") && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == snake.style.top)) {
+                            if (hasEatenApple) {
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                            }
+                        }
+                    }
+                    if (yum == 1) {
+                        yum++;
+                        snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                        tail.style.display = "block";
+                        tailTopPosition = topPosition;
+                        tailLeftPosition = leftPosition - 1;
+                        tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                        tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                    } else if (yum == 2) {
+                        yum++;
+                    } else if (yum == 3) {
+                        yum++;
+                    } else if (yum == 4) {
+                        justAteApple = false;
+                        yum++;
+                    }
+                    if (m == 1) {
+                        m++;
+                    } else if (m == 2) {
+                        m++;
+                    } else if (m == 3) {
+                        m++;
+                        if (!debugSnakeBodyPartGlitch) {
+                            justAteApple = false;
+                        }
+                    } else if (m == 4) {
+                        m++;
+                        if (debugSnakeBodyPartGlitch) {
+                            debugSnakeBodyPartGlitch = false;
+                            justAteApple = false;
+                        }
+                    }
+                }
+            }
+            if (goingDown) {
+                if (justWentDown) {
+                    justWentDown = false;
+                } else {
+                    snake.style.transform = "rotate(180deg)";
+                    topPosition += 1;
+                    snake.style.top = (topPosition * sizeFactor) + "px";
+                    for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                        if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == snake.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == ((topPosition * sizeFactor) - sizeFactor) + "px")) {
+                            if (hasEatenApple) {
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                            }
+                        }
+                    }
+                    if (yum == 1) {
+                        yum++;
+                        snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                        tail.style.display = "block";
+                        tailTopPosition = topPosition - 1;
+                        tailLeftPosition = leftPosition;
+                        tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                        tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                    } else if (yum == 2) {
+                        yum++;
+                    } else if (yum == 3) {
+                        yum++;
+                    } else if (yum == 4) {
+                        justAteApple = false;
+                        yum++;
+                    }
+                    if (m == 1) {
+                        m++;
+                    } else if (m == 2) {
+                        m++;
+                    } else if (m == 3) {
+                        m++;
+                        if (!debugSnakeBodyPartGlitch) {
+                            justAteApple = false;
+                        }
+                    } else if (m == 4) {
+                        m++;
+                        if (debugSnakeBodyPartGlitch) {
+                            debugSnakeBodyPartGlitch = false;
+                            justAteApple = false;
+                        }
+                    }
+                }
+            }
+            if (goingLeft) {
+                if (justWentLeft) {
+                    justWentLeft = false;
+                } else {
+                    snake.style.transform = "rotate(270deg)";
+                    leftPosition -= 1;
+                    snake.style.left = (leftPosition * sizeFactor) + "px";
+                    for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                        if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == ((leftPosition * sizeFactor) + sizeFactor) + "px") && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == snake.style.top)) {
+                            if (hasEatenApple) {
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                            }
+                        }
+                    }
+                    if (yum == 1) {
+                        yum++;
+                        snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                        tail.style.display = "block";
+                        tailTopPosition = topPosition;
+                        tailLeftPosition = leftPosition + 1;
+                        tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                        tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                    } else if (yum == 2) {
+                        yum++;
+                    } else if (yum == 3) {
+                        yum++;
+                    } else if (yum == 4) {
+                        justAteApple = false;
+                        yum++;
+                    }
+                    if (m == 1) {
+                        m++;
+                    } else if (m == 2) {
+                        m++;
+                    } else if (m == 3) {
+                        m++;
+                        if (!debugSnakeBodyPartGlitch) {
+                            justAteApple = false;
+                        }
+                    } else if (m == 4) {
+                        m++;
+                        if (debugSnakeBodyPartGlitch) {
+                            debugSnakeBodyPartGlitch = false;
+                            justAteApple = false;
+                        }
+                    }
+                }
+            }
+            if ((leftPosition * sizeFactor) + "px" == apple.style.left && (topPosition * sizeFactor) + "px" == apple.style.top) {
+                placeApple();
+                if (!justAteApple) {
+                    score += 3;
+                    document.getElementById("score").innerHTML = score;
+                    if (!hasEatenApple) {
+                        justAteApple = true;
+                        hasEatenApple = true;
+                        yum = 1;
+                    } else {
+                        justAteApple = true;
+                        m = 1;
+                    }
+                }
+            }
+            moveTailFunction();
+            updateHighScore();
+            stopFunction();
+        }
+        var move = setInterval(moveFunction, 100);
+
+        function moveTailFunction() {
+            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                }
+            }
+            if (!justMovedTail) {
+                if (!justAteApple) {
+                    if (hasEatenApple) {
+                        for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                            if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "hidden";
+                                tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(0deg)") {
+                                    tailTopPosition -= 1;
+                                } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(90deg)") {
+                                    tailLeftPosition += 1;
+                                } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(180deg)") {
+                                    tailTopPosition += 1;
+                                } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(270deg)") {
+                                    tailLeftPosition -= 1;
+                                }
+                            }
+                        }
+                    }
+                    tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                    tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                }
+            } else {
+                justMovedTail = false;
+            }
+        }
+
+        function stopFunction() {
+            if (leftPosition < 0 || leftPosition > 59) {
+                died();
+            }
+            if (topPosition < 0 || topPosition > 29) {
+                died();
+            }
+            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility == "visible" && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == snake.style.top && document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == snake.style.left)) {
+                    died();
+                }
+            }
+        }
+        var stop = setInterval(stopFunction, 20);
+        var tailBugFix = setInterval(function() {
+            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility == "hidden") {
+                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = "";
+                }
+            }
+        }, 20)
+
+        function start() {
+            document.getElementById("intro").style.display = "none";
+            playing = true;
+            dead = false;
+            document.getElementById("score").innerHTML = score;
+            try {
+                if (typeof(Storage) !== undefined) {
+                    if (localStorage.getItem("high-score") == null) {
+                        oldHighScore = 0;
+                    } else {
+                        oldHighScore = localStorage.getItem("high-score");
+                    }
+                }
+            } catch (error) {
+                console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+            }
+        }
+
+        function keyDownFunction(event) {
+            var key = event.which || event.keyCode;
+            if (key == 38 || key == 87) {
+                goUp();
+            } else if (key == 39 || key == 68) {
+                goRight();
+            } else if (key == 40 || key == 83) {
+                goDown();
+            } else if (key == 37 || key == 65) {
+                goLeft();
+            } else if (key == 32) {
+                pause();
+            }
+        }
+
+        function goUp() {
+            if (playing) {
+                if (!paused) {
+                    if (goingDown) {
+                        goingUp = false;
+                    } else if (goingUp) {
+                        goingUp = true;
+                    } else {
+                        goingUp = true;
+                        goingRight = false;
+                        goingLeft = false;
+                        justWentUp = true;
+                        justWentRight = false;
+                        justWentDown = false;
+                        justWentLeft = false;
+                        snake.style.transform = "rotate(0deg)";
+                        topPosition -= 1;
+                        snake.style.top = (topPosition * sizeFactor) + "px";
+                        for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                            if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == snake.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == ((topPosition * sizeFactor) + sizeFactor) + "px")) {
+                                if (hasEatenApple) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                                }
+                            }
+                        }
+                        if (yum == 1) {
+                            yum++;
+                            snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                            tail.style.display = "block";
+                            tailTopPosition = topPosition + 1;
+                            tailLeftPosition = leftPosition;
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                }
+                            }
+                        } else if (yum == 2) {
+                            yum++;
+                        } else if (yum == 3) {
+                            yum++;
+                        } else if (yum == 4) {
+                            justAteApple = false;
+                            yum++;
+                        }
+                        if (m == 1) {
+                            m++;
+                        } else if (m == 2) {
+                            m++;
+                        } else if (m == 3) {
+                            m++;
+                            if (!debugSnakeBodyPartGlitch) {
+                                justAteApple = false;
+                            }
+                        } else if (m == 4) {
+                            if (debugSnakeBodyPartGlitch) {
+                                debugSnakeBodyPartGlitch = false;
+                                justAteApple = false;
+                            }
+                        }
+                        if (!justAteApple) {
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "hidden";
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                    if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(0deg)") {
+                                        tailTopPosition -= 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(90deg)") {
+                                        tailLeftPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(180deg)") {
+                                        tailTopPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(270deg)") {
+                                        tailLeftPosition -= 1;
+                                    }
+                                }
+                            }
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            justMovedTail = true;
+                        }
+                    }
+                }
+            }
+            if ((leftPosition * sizeFactor) + "px" == apple.style.left && (topPosition * sizeFactor) + "px" == apple.style.top) {
+                placeApple();
+                if (!justAteApple) {
+                    debugSnakeBodyPartGlitch = true;
+                    score += 3;
+                    document.getElementById("score").innerHTML = score;
+                    if (!hasEatenApple) {
+                        justAteApple = true;
+                        hasEatenApple = true;
+                        yum = 1;
+                    } else {
+                        justAteApple = true;
+                        m = 1;
+                    }
+                }
+            }
+            updateHighScore();
+            stopFunction();
+        }
+
+        function goRight() {
+            if (playing) {
+                if (!paused) {
+                    if (goingLeft) {
+                        goingRight = false;
+                    } else if (goingRight) {
+                        goingRight = true;
+                    } else {
+                        goingRight = true;
+                        goingUp = false;
+                        goingDown = false;
+                        justWentRight = true;
+                        justWentUp = false;
+                        justWentDown = false;
+                        justWentLeft = false;
+                        snake.style.transform = "rotate(90deg)";
+                        leftPosition += 1;
+                        snake.style.left = (leftPosition * sizeFactor) + "px";
+                        for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                            if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == ((leftPosition * sizeFactor) - sizeFactor) + "px") && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == snake.style.top)) {
+                                if (hasEatenApple) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                                }
+                            }
+                        }
+                        if (yum == 1) {
+                            yum++;
+                            snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                            tail.style.display = "block";
+                            tailTopPosition = topPosition;
+                            tailLeftPosition = leftPosition - 1;
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                }
+                            }
+                        } else if (yum == 2) {
+                            yum++;
+                        } else if (yum == 3) {
+                            yum++;
+                        } else if (yum == 4) {
+                            justAteApple = false;
+                            yum++;
+                        }
+                        if (m == 1) {
+                            m++;
+                        } else if (m == 2) {
+                            m++;
+                        } else if (m == 3) {
+                            m++;
+                            if (!debugSnakeBodyPartGlitch) {
+                                justAteApple = false;
+                            }
+                        } else if (m == 4) {
+                            if (debugSnakeBodyPartGlitch) {
+                                debugSnakeBodyPartGlitch = false;
+                                justAteApple = false;
+                            }
+                        }
+                        if (!justAteApple) {
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "hidden";
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                    if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(0deg)") {
+                                        tailTopPosition -= 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(90deg)") {
+                                        tailLeftPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(180deg)") {
+                                        tailTopPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(270deg)") {
+                                        tailLeftPosition -= 1;
+                                    }
+                                }
+                            }
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            justMovedTail = true;
+                        }
+                    }
+                }
+            }
+            if ((leftPosition * sizeFactor) + "px" == apple.style.left && (topPosition * sizeFactor) + "px" == apple.style.top) {
+                placeApple();
+                if (!justAteApple) {
+                    debugSnakeBodyPartGlitch = true;
+                    score += 3;
+                    document.getElementById("score").innerHTML = score;
+                    if (!hasEatenApple) {
+                        justAteApple = true;
+                        hasEatenApple = true;
+                        yum = 1;
+                    } else {
+                        justAteApple = true;
+                        m = 1;
+                    }
+                }
+            }
+            updateHighScore();
+            stopFunction();
+        }
+
+        function goDown() {
+            if (playing) {
+                if (!paused) {
+                    if (goingUp) {
+                        goingDown = false;
+                    } else if (goingDown) {
+                        goingDown = true;
+                    } else {
+                        goingDown = true;
+                        goingRight = false;
+                        goingLeft = false;
+                        justWentDown = true;
+                        justWentUp = false;
+                        justWentRight = false;
+                        justWentLeft = false;
+                        snake.style.transform = "rotate(180deg)";
+                        topPosition += 1;
+                        snake.style.top = (topPosition * sizeFactor) + "px";
+                        for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                            if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == snake.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == ((topPosition * sizeFactor) - sizeFactor) + "px")) {
+                                if (hasEatenApple) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                                }
+                            }
+                        }
+                        if (yum == 1) {
+                            yum++;
+                            snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                            tail.style.display = "block";
+                            tailTopPosition = topPosition - 1;
+                            tailLeftPosition = leftPosition;
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                }
+                            }
+                        } else if (yum == 2) {
+                            yum++;
+                        } else if (yum == 3) {
+                            yum++;
+                        } else if (yum == 4) {
+                            justAteApple = false;
+                            yum++;
+                        }
+                        if (m == 1) {
+                            m++;
+                        } else if (m == 2) {
+                            m++;
+                        } else if (m == 3) {
+                            m++;
+                            if (!debugSnakeBodyPartGlitch) {
+                                justAteApple = false;
+                            }
+                        } else if (m == 4) {
+                            if (debugSnakeBodyPartGlitch) {
+                                debugSnakeBodyPartGlitch = false;
+                                justAteApple = false;
+                            }
+                        }
+                        if (!justAteApple) {
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "hidden";
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                    if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(0deg)") {
+                                        tailTopPosition -= 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(90deg)") {
+                                        tailLeftPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(180deg)") {
+                                        tailTopPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(270deg)") {
+                                        tailLeftPosition -= 1;
+                                    }
+                                }
+                            }
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            justMovedTail = true;
+                        }
+                    }
+                }
+            }
+            if ((leftPosition * sizeFactor) + "px" == apple.style.left && (topPosition * sizeFactor) + "px" == apple.style.top) {
+                placeApple();
+                if (!justAteApple) {
+                    debugSnakeBodyPartGlitch = true;
+                    score += 3;
+                    document.getElementById("score").innerHTML = score;
+                    if (!hasEatenApple) {
+                        justAteApple = true;
+                        hasEatenApple = true;
+                        yum = 1;
+                    } else {
+                        justAteApple = true;
+                        m = 1;
+                    }
+                }
+            }
+            updateHighScore();
+            stopFunction();
+        }
+
+        function goLeft() {
+            if (playing) {
+                if (!paused) {
+                    if (goingRight) {
+                        goingLeft = false;
+                    } else if (goingLeft) {
+                        goingLeft = true;
+                    } else {
+                        goingLeft = true;
+                        goingUp = false;
+                        goingDown = false;
+                        justWentLeft = true;
+                        justWentUp = false;
+                        justWentRight = false;
+                        justWentDown = false;
+                        snake.style.transform = "rotate(270deg)";
+                        leftPosition -= 1;
+                        snake.style.left = (leftPosition * sizeFactor) + "px";
+                        for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                            if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == ((leftPosition * sizeFactor) + sizeFactor) + "px") && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == snake.style.top)) {
+                                if (hasEatenApple) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "visible";
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = snake.style.transform;
+                                }
+                            }
+                        }
+                        if (yum == 1) {
+                            yum++;
+                            snake.style.borderBottom = "1px solid rgb(0,200,0)";
+                            tail.style.display = "block";
+                            tailTopPosition = topPosition;
+                            tailLeftPosition = leftPosition + 1;
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                }
+                            }
+                        } else if (yum == 2) {
+                            yum++;
+                        } else if (yum == 3) {
+                            yum++;
+                        } else if (yum == 4) {
+                            justAteApple = false;
+                            yum++;
+                        }
+                        if (m == 1) {
+                            m++;
+                        } else if (m == 2) {
+                            m++;
+                        } else if (m == 3) {
+                            m++;
+                            if (!debugSnakeBodyPartGlitch) {
+                                justAteApple = false;
+                            }
+                        } else if (m == 4) {
+                            if (debugSnakeBodyPartGlitch) {
+                                debugSnakeBodyPartGlitch = false;
+                                justAteApple = false;
+                            }
+                        }
+                        if (!justAteApple) {
+                            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == tail.style.left) && (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == tail.style.top)) {
+                                    document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "hidden";
+                                    tail.style.transform = document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform;
+                                    if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(0deg)") {
+                                        tailTopPosition -= 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(90deg)") {
+                                        tailLeftPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(180deg)") {
+                                        tailTopPosition += 1;
+                                    } else if (document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform == "rotate(270deg)") {
+                                        tailLeftPosition -= 1;
+                                    }
+                                }
+                            }
+                            tail.style.top = (tailTopPosition * sizeFactor) + "px";
+                            tail.style.left = (tailLeftPosition * sizeFactor) + "px";
+                            justMovedTail = true;
+                        }
+                    }
+                }
+            }
+            if ((leftPosition * sizeFactor) + "px" == apple.style.left && (topPosition * sizeFactor) + "px" == apple.style.top) {
+                placeApple();
+                if (!justAteApple) {
+                    debugSnakeBodyPartGlitch = true;
+                    score += 3;
+                    document.getElementById("score").innerHTML = score;
+                    if (!hasEatenApple) {
+                        justAteApple = true;
+                        hasEatenApple = true;
+                        yum = 1;
+                    } else {
+                        justAteApple = true;
+                        m = 1;
+                    }
+                }
+            }
+            updateHighScore();
+            stopFunction();
+        }
+
+        function pause() {
+            if (playing == true) {
+                if (paused == true) {
+                    document.getElementById("pauseScreen").style.display = "none";
+                    move = setInterval(moveFunction, 100);
+                    paused = false;
+                } else {
+                    document.getElementById("pauseScreen").style.display = "block";
+                    clearInterval(move);
+                    paused = true;
+                }
+            }
+        }
+
+        function placeApple() {
+            appleLeftPosition = Math.round(Math.random() * 59);
+            appleTopPosition = Math.round(Math.random() * 29);
+            apple.style.left = (appleLeftPosition * sizeFactor) + "px";
+            apple.style.top = (appleTopPosition * sizeFactor) + "px";
+            if ((appleLeftPosition * sizeFactor == leftPosition * sizeFactor) && (appleTopPosition * sizeFactor == topPosition * sizeFactor)) {
+                placeApple();
+            }
+            if ((appleLeftPosition * sizeFactor == tailLeftPosition * sizeFactor) && (appleTopPosition * sizeFactor == tailTopPosition * sizeFactor)) {
+                placeApple();
+            }
+            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                if ((document.getElementsByClassName("snake-bodypart")[bodyPiece].style.left == apple.style.left && document.getElementsByClassName("snake-bodypart")[bodyPiece].style.top == apple.style.top) && document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility == "visible") {
+                    placeApple();
+                }
+            }
+        }
+
+        function updateHighScore() {
+            try {
+                if (typeof(Storage) !== undefined) {
+                    document.getElementById("high-score").innerHTML = localStorage.getItem("high-score");
+                    if ((localStorage.getItem("high-score") <= score || localStorage.getItem("high-score") == null) && playing) {
+                        localStorage.setItem("high-score", score);
+                    } else if (localStorage.getItem("high-score") == null) {
+                        document.getElementById("high-score").innerHTML = "-";
+                    }
+                } else {
+                    document.getElementById("high-score-box").style.display = "none";
+                }
+            } catch (error) {
+                console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+                document.getElementById("high-score").innerHTML = "Not Available :("
+            }
+        }
+        var x;
+        var y;
+        for (x = 0; x <= 59; x++) {
+            for (y = 0; y <= 29; y++) {
+                var bodypart = document.createElement("div");
+                bodypart.className = "snake-bodypart";
+                document.getElementById("game-field").appendChild(bodypart);
+                bodypart.style.top = (y * sizeFactor) + "px";
+                bodypart.style.left = (x * sizeFactor) + "px";
+                var bodyPositionX = document.createAttribute("data-position-x")
+                bodyPositionX.value = x;
+                bodypart.setAttributeNode(bodyPositionX);
+                var bodyPositionY = document.createAttribute("data-position-y")
+                bodyPositionY.value = y;
+                bodypart.setAttributeNode(bodyPositionY);
+            }
+        }
+
+        function died() {
+            dead = true;
+            snake.style.background = "gray";
+            snake.style.border = "1px solid red";
+            yum = 0;
+            clearInterval(move);
+            clearInterval(stop);
+            goingUp = false;
+            goingRight = false;
+            goingLeft = false;
+            goingDown = false;
+            justWentUp = false;
+            justWentRight = false;
+            justWentDown = false;
+            justWentLeft = false;
+            playing = false;
+            try {
+                if (typeof(Storage) !== undefined) {
+                    if (localStorage.getItem("high-score") > oldHighScore) {
+                        document.getElementById("beat-high-score").style.display = "block";
+                        document.getElementById("final-high-score").innerHTML = score;
+                    } else {
+                        document.getElementById("gameOver").style.display = "block";
+                        document.getElementById("finalScore").innerHTML = score;
+                    }
+                }
+            } catch (error) {
+                console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+                document.getElementById("gameOver").style.display = "block";
+                document.getElementById("finalScore").innerHTML = score;
+            }
+        }
+
+        function restart() {
+            playing = true;
+            dead = false;
+            try {
+                if (typeof(Storage) !== undefined) {
+                    oldHighScore = localStorage.getItem("high-score");
+                }
+            } catch (error) {
+                console.log(error.message + "cuz Microsoft Edge and IE are trash.");
+            }
+
+            score = 1;
+            document.getElementById("score").innerHTML = score;
+            topPosition = 1;
+            leftPosition = 1;
+            snake.style.top = (topPosition * sizeFactor) + "px";
+            snake.style.left = (leftPosition * sizeFactor) + "px";
+            justMovedTail = false;
+            document.getElementById("gameOver").style.display = "none";
+            document.getElementById("beat-high-score").style.display = "none";
+            snake.style.border = "1px solid rgb(0,200,0)";
+            snake.style.borderTop = "1px solid red";
+            snake.style.borderBottom = "1px solid cyan";
+            snake.style.background = "rgb(0,255,0)";
+            snake.style.transform = "rotate(0deg)";
+            move = setInterval(moveFunction, 100);
+            for (bodyPiece = 0; bodyPiece < document.getElementsByClassName("snake-bodypart").length; bodyPiece++) {
+                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.visibility = "hidden";
+                document.getElementsByClassName("snake-bodypart")[bodyPiece].style.transform = "";
+            }
+            yum = 0;
+            m = 0;
+            score = 1;
+            tail.style.display = "none";
+            justAteApple = false;
+            hasEatenApple = false;
+            placeApple();
+        }
+        placeApple();
+    </script>
+</body>
+
+</html>
